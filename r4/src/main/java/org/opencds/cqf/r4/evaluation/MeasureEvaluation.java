@@ -559,7 +559,7 @@ public class MeasureEvaluation {
         }
     }
 
-    private ArrayList<String> populateSDEAccumulatorCodes(Object sdeListItem, ArrayList<String> codes) {
+    private ArrayList<String> populateSDEAccumulatorCodes(Object sdeListItem, ArrayList<String> codes, String sdeAccumulatorKey) {
         if (codes == null) {
             codes = new ArrayList<String>();
         }
@@ -578,7 +578,7 @@ public class MeasureEvaluation {
                 CodeableConcept codeableConcept = (CodeableConcept) sdeListItem;
 
                 for (Coding coding : codeableConcept.getCoding()) {
-                    this.populateSDEAccumulatorCodes(coding, codes);
+                    this.populateSDEAccumulatorCodes(coding, codes, sdeAccumulatorKey);
                 }
                 break;
             case "org.hl7.fhir.r4.model.Coding":
@@ -595,14 +595,14 @@ public class MeasureEvaluation {
                 break;
             case "java.util.ArrayList":
                 for (Object next : (ArrayList<?>) sdeListItem) {
-                    this.populateSDEAccumulatorCodes(next, codes);
+                    this.populateSDEAccumulatorCodes(next, codes, sdeAccumulatorKey);
                 }
                 break;
             case "org.hl7.fhir.r4.model.DateType":
                 this.addCodeIfNotExists(codes, ((org.hl7.fhir.r4.model.DateType) sdeListItem).getValueAsString());
                 break;
             default:
-                logger.info("SDE type " + sdeListItem.getClass().getName() + " is not supported. This SDE won't be counted.");
+                logger.info("SDE \"" + sdeAccumulatorKey + "\" returns a type " + sdeListItem.getClass().getName() + " which is not supported. This SDE won't be counted.");
                 break;
         }
 
@@ -629,7 +629,7 @@ public class MeasureEvaluation {
                         sdeAccumulatorKey = sde.get(i).getCriteria().getExpression();
                     }
                     HashMap<String, Integer> sdeItemMap = sdeAccumulators.get(sdeAccumulatorKey);
-                    ArrayList<String> codes = this.populateSDEAccumulatorCodes(sdeListItem, null);
+                    ArrayList<String> codes = this.populateSDEAccumulatorCodes(sdeListItem, null, sdeAccumulatorKey);
 
                     if (codes != null) {
                         for (String code : codes) {
